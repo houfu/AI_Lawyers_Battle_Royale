@@ -112,17 +112,23 @@ The applicable principles regarding costs are:
 The Court must order the costs of any proceedings in favour of a successful party, except when it appears to the Court 
 that in the circumstances of the case some other order should be made as to the whole or any part of the costs.
 
-If the Plaintiff is successful, the following shall apply:
-* Costs of $1000 should be awarded to Plaintiff.
-* If Plaintiff's arguments did not assist the court, the Plaintiff's costs should be reduced by the extent it did not.
-* If Defendant's arguments were instrumental to the decision of the court, no costs may be awarded.
-
-If the Defendant is successful, the following shall apply:
-* Costs of $1000 should be awarded to Defendant.
-* If Defendant's arguments did not assist the court, the Defendant's costs should be reduced by the extent it did not.
-* If Plaintiff's arguments were instrumental to the decision of the court, no costs may be awarded.
+Use the following guidelines.
+* Costs should be awarded to the successful party.
+* Full costs of $1000 should usually be awarded to the successful party.
+* However when the successful party's counsel's arguments did not help the court, costs awarded to successful party should be 
+reduced.
+* If the unsuccessful party's counsel's arguments were material to the decision of the court in reaching a fair outcome, 
+costs awarded to successful party should be reduced.
+* If the unsuccessful party's counsel's arguments were instrumental to the decision of the court in reaching a fair outcome,
+no costs may be awarded.
 
 Let's think step by step.
+1. Determine who is the successful party
+2. Determine if the successful party's counsel helped the court
+3. Determine if full costs should be awarded to successful party
+4. Determine if the losing party's counsel helped the court materially or instrumentally
+5. Determine if costs to successful party should be reduced or denied
+6. Determine the final costs payable
 """
 
 costs_user_template = """This is a transcript of the arguments in the hearing:
@@ -130,4 +136,20 @@ costs_user_template = """This is a transcript of the arguments in the hearing:
 
 This is the decision made by the court:
 {decision}
+"""
+
+coach_template = """You are a coach to improve {party} advocacy.
+Suggest improvements to help {party} achieve its goals of win by convincing the court to rule 
+in {party} favour and rebutting the other party's arguments by
+* being the successful party
+* obtaining full costs if the party is successful
+* reducing the costs payable if the party is not successful
+ 
+Your suggestions should meet the following constraints:
+1. it should not be about documents or pleadings or affidavits, case laws or other materials not available to counsel 
+2. it should improve the counsel's performance
+3. try to be generic and insightful
+4. it should focus on the arguments that a party can make
+
+Start with "I am the advocacy coach for {party}"
 """

@@ -9,7 +9,7 @@ from langchain.prompts import SystemMessagePromptTemplate, HumanMessagePromptTem
 from langchain.schema import HumanMessage, AIMessage, BaseMessage
 
 from prompts import Scenario, plaintiff_template, court_template, costs_system_template, costs_user_template, \
-    defendant_template
+    defendant_template, coach_template
 
 
 class StreamHandler(BaseCallbackHandler):
@@ -52,6 +52,19 @@ def costs_determination(messages):
     ).to_messages()
 
 
+def coach(messages, role):
+    system_message_prompt = SystemMessagePromptTemplate.from_template(coach_template)
+    user_message_prompt = HumanMessagePromptTemplate.from_template(costs_user_template)
+    chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, user_message_prompt])
+    decision = messages[-1]["content"]
+    transcript = ""
+    for argument in messages[:-1]:
+        transcript += argument["content"]
+    return chat_prompt.format_prompt(
+        decision=decision, transcript=transcript, party=role
+    ).to_messages()
+
+
 class Conductor:
     def __init__(self, openai_key: str, scenario: Scenario, autopilot=False):
         self.openai_key = openai_key
@@ -89,6 +102,20 @@ class Conductor:
                     openai_api_key=self.openai_key, streaming=True, callbacks=[stream_handler]
                 )
                 response = llm(costs_determination(st.session_state.messages))
+                st.session_state.messages.append({"role": "court", "content": response.content})
+                stream_handler = StreamHandler(add_message('court'))
+                llm = ChatOpenAI(
+                    temperature=0.2,
+                    openai_api_key=self.openai_key, streaming=True, callbacks=[stream_handler]
+                )
+                response = llm(coach(st.session_state.messages, 'Plaintiff'))
+                st.session_state.messages.append({"role": "court", "content": response.content})
+                stream_handler = StreamHandler(add_message('court'))
+                llm = ChatOpenAI(
+                    temperature=0.2,
+                    openai_api_key=self.openai_key, streaming=True, callbacks=[stream_handler]
+                )
+                response = llm(coach(st.session_state.messages, 'Defendant'))
                 st.session_state.messages.append({"role": "court", "content": response.content})
         else:
             stream_handler = StreamHandler(add_message('court'))
