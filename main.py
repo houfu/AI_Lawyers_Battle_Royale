@@ -18,6 +18,8 @@ with st.sidebar:
 
     st.button('Reset', on_click=reset)
 
+    autopilot = st.checkbox('Autopilot', False, help="Runs AI Models against each other as Plaintiff and Defendant")
+
     if selected_scenario:
         st.header('Selected scenario')
         scenario = get_scenario(selected_scenario).dict()
@@ -28,7 +30,7 @@ if not openai_api_key:
     st.info("Please add your OpenAI API key to continue.")
     st.stop()
 
-conductor = Conductor(openai_api_key, get_scenario(selected_scenario))
+conductor = Conductor(openai_api_key, get_scenario(selected_scenario), autopilot)
 
 for msg in st.session_state.messages:
     if msg["role"] == 'court':

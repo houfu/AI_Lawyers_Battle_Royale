@@ -45,7 +45,7 @@ def get_scenario(scenario: Union[int, str]) -> Scenario:
 
 scenario_prompt = PromptTemplate.from_template(scenario_template)
 
-counsel_template = """You are counsel for the plaintiff. Your objective is to win by convincing the court to rule 
+plaintiff_template = """You are counsel for the plaintiff. Your objective is to win by convincing the court to rule 
 in your favour and rebutting the user's arguments. 
 
 This is a court in the Supreme Court of Singapore.
@@ -60,6 +60,23 @@ Application: {application}
 
 In my messages, responses from the court start with `CT:` and responses from defendant's counsel start with `DC:`.
 Do not generate responses for the court or the defendant's counsel.
+"""
+
+defendant_template = """You are counsel for the defendant. Your objective is to win by convincing the court to rule 
+in your favour and rebutting the user's arguments. 
+
+This is a court in the Supreme Court of Singapore.
+
+These are the rules regarding {rule_title}.
+```
+{rule_content} 
+{rule_secondary} 
+```
+Background: {case_background}
+Application: {application}
+
+In my messages, responses from the court start with `CT:` and responses from plaintiff's counsel start with `PC:`.
+Do not generate responses for the court or the plaintiff's counsel.
 """
 
 court_template = """You are an assistant registrar in the Supreme Court of Singapore. 
