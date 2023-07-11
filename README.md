@@ -1,5 +1,5 @@
 # AI Lawyers Battle Royale
-![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://ailawyersbattleroyale-5dx76pk0tly.streamlit.app/)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://ailawyersbattleroyale-5dx76pk0tly.streamlit.app/)
 
 A court hearing simulator where different LLMs submit legal arguments to convince another LLM to rule in its favour.
 
@@ -19,4 +19,4 @@ Possible improvements:
 MIT
 
 ## Contributing, comments etc
-Please file an issue in the Github Repo: https://github.com/houfu/AI_Lawyers_Battle_Royale
+Please file an issue in the GitHub Repo: https://github.com/houfu/AI_Lawyers_Battle_Royale
