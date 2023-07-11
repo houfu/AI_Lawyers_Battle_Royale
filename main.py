@@ -7,7 +7,8 @@ st.title("AI Lawyers Battle Royale")
 
 
 def reset():
-    del st.session_state["messages"]
+    if "messages" in st.session_state:
+        del st.session_state["messages"]
 
 
 with st.sidebar:
@@ -19,6 +20,9 @@ with st.sidebar:
     st.button('Reset', on_click=reset)
 
     autopilot = st.checkbox('Autopilot', False, help="Runs AI Models against each other as Plaintiff and Defendant")
+    coaching = st.checkbox('Coach remarks', False)
+    coached_plaintiff = st.checkbox('Plaintiff is coached', False)
+    coached_defendant = st.checkbox('Defendant is coached', False)
 
     if selected_scenario:
         st.header('Selected scenario')
@@ -30,7 +34,8 @@ if not openai_api_key:
     st.info("Please add your OpenAI API key to continue.")
     st.stop()
 
-conductor = Conductor(openai_api_key, get_scenario(selected_scenario), autopilot)
+conductor = Conductor(openai_api_key, get_scenario(selected_scenario), autopilot, coaching, coached_plaintiff,
+                      coached_defendant)
 
 for msg in st.session_state.messages:
     if msg["role"] == 'court':

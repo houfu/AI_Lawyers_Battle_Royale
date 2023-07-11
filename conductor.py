@@ -66,11 +66,14 @@ def coach(messages, role):
 
 
 class Conductor:
-    def __init__(self, openai_key: str, scenario: Scenario, autopilot=False):
+    def __init__(self, openai_key: str, scenario: Scenario, autopilot, coaching, plaintiff_coached, defendant_coached):
+        self.plaintiff_coached = plaintiff_coached
+        self.defendant_coached = defendant_coached
+        self.coaching = coaching
         self.openai_key = openai_key
         if "messages" not in st.session_state:
             initialize()
-        self.scenario = scenario.dict()
+        self.scenario = scenario
         self.autopilot = autopilot
 
     def run(self):
@@ -80,19 +83,21 @@ class Conductor:
             if last_message["content"][-4:] == '[PC]':
                 stream_handler = StreamHandler(add_message('counsel'))
                 llm = ChatOpenAI(
-                    temperature=0.6,
+                    temperature=0.8,
                     openai_api_key=self.openai_key, streaming=True, callbacks=[stream_handler]
                 )
-                response = llm(self.convert_messages_to_langchain_schema(st.session_state.messages, 'counsel'))
+                response = llm(self.convert_messages_to_langchain_schema(st.session_state.messages, 'counsel',
+                                                                         self.plaintiff_coached))
                 st.session_state.messages.append({"role": "counsel", "content": response.content})
                 self.run()
             if last_message["content"][-4:] == '[DC]' and self.autopilot:
                 stream_handler = StreamHandler(add_message('user'))
                 llm = ChatOpenAI(
-                    temperature=0.6,
+                    temperature=0.8,
                     openai_api_key=self.openai_key, streaming=True, callbacks=[stream_handler]
                 )
-                response = llm(self.convert_messages_to_langchain_schema(st.session_state.messages, 'user'))
+                response = llm(self.convert_messages_to_langchain_schema(st.session_state.messages, 'user',
+                                                                         self.defendant_coached))
                 st.session_state.messages.append({"role": "user", "content": response.content})
                 self.run()
             if last_message["content"][-5:] == '[END]':
@@ -103,20 +108,21 @@ class Conductor:
                 )
                 response = llm(costs_determination(st.session_state.messages))
                 st.session_state.messages.append({"role": "court", "content": response.content})
-                stream_handler = StreamHandler(add_message('court'))
-                llm = ChatOpenAI(
-                    temperature=0.2,
-                    openai_api_key=self.openai_key, streaming=True, callbacks=[stream_handler]
-                )
-                response = llm(coach(st.session_state.messages, 'Plaintiff'))
-                st.session_state.messages.append({"role": "court", "content": response.content})
-                stream_handler = StreamHandler(add_message('court'))
-                llm = ChatOpenAI(
-                    temperature=0.2,
-                    openai_api_key=self.openai_key, streaming=True, callbacks=[stream_handler]
-                )
-                response = llm(coach(st.session_state.messages, 'Defendant'))
-                st.session_state.messages.append({"role": "court", "content": response.content})
+                if self.coaching:
+                    stream_handler = StreamHandler(add_message('court'))
+                    llm = ChatOpenAI(
+                        temperature=0.2,
+                        openai_api_key=self.openai_key, streaming=True, callbacks=[stream_handler]
+                    )
+                    response = llm(coach(st.session_state.messages, 'Plaintiff'))
+                    st.session_state.messages.append({"role": "court", "content": response.content})
+                    stream_handler = StreamHandler(add_message('court'))
+                    llm = ChatOpenAI(
+                        temperature=0.2,
+                        openai_api_key=self.openai_key, streaming=True, callbacks=[stream_handler]
+                    )
+                    response = llm(coach(st.session_state.messages, 'Defendant'))
+                    st.session_state.messages.append({"role": "court", "content": response.content})
         else:
             stream_handler = StreamHandler(add_message('court'))
             llm = ChatOpenAI(
@@ -127,7 +133,7 @@ class Conductor:
             st.session_state.messages.append({"role": "court", "content": response.content})
             self.run()
 
-    def convert_messages_to_langchain_schema(self, messages, role: str):
+    def convert_messages_to_langchain_schema(self, messages, role: str, coached=False):
         if role == 'counsel':
             template = plaintiff_template
         elif role == 'court':
@@ -135,8 +141,15 @@ class Conductor:
         else:
             template = defendant_template
         system_message_prompt = SystemMessagePromptTemplate.from_template(template)
-        scenario = self.scenario
+        scenario = self.scenario.dict(exclude={"plaintiff_coach", "defendant_coach"})
         result = [system_message_prompt.format(**scenario)]
+        if coached:
+            if role == "counsel":
+                result.append(HumanMessage(
+                    content=f"Follow these pointer to improve your arguments: {self.scenario.plaintiff_coach}"))
+            elif role == 'user':
+                result.append(HumanMessage(
+                    content=f"Follow these pointer to improve your arguments: {self.scenario.defendant_coach}"))
         for message in messages:
             message_role = message["role"]
             if message_role == role:

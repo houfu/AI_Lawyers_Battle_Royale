@@ -22,6 +22,8 @@ class Scenario(BaseModel):
     rule_secondary: Optional[str]
     case_background: str
     application: str
+    plaintiff_coach: str
+    defendant_coach: str
 
 
 def load_scenarios() -> list[Scenario]:
